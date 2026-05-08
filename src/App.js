@@ -11,11 +11,76 @@ const MOCK_STATS = [
 ];
 
 const MOCK_USERS = [
-  { id: 1, name: 'Sarah Chen', email: 'sarah@example.com', role: 'Admin', status: 'Active' },
-  { id: 2, name: 'Marcus Johnson', email: 'marcus@example.com', role: 'Editor', status: 'Active' },
-  { id: 3, name: 'Emily Rodriguez', email: 'emily@example.com', role: 'Viewer', status: 'Inactive' },
-  { id: 4, name: 'David Kim', email: 'david@example.com', role: 'Editor', status: 'Active' },
-  { id: 5, name: 'Lisa Wang', email: 'lisa@example.com', role: 'Admin', status: 'Active' },
+  {
+    id: 1, name: 'Sarah Chen', email: 'sarah@example.com', role: 'Admin', status: 'Active',
+    linkedin: {
+      headline: 'VP of Engineering at TechCorp',
+      location: 'San Francisco, CA',
+      connections: 1240,
+      experience: [
+        { title: 'VP of Engineering', company: 'TechCorp', duration: '2022 - Present' },
+        { title: 'Senior Engineer', company: 'StartupXYZ', duration: '2019 - 2022' },
+      ],
+      skills: ['React', 'Node.js', 'System Design', 'Team Leadership'],
+      profile_url: 'https://linkedin.com/in/sarah-chen',
+    }
+  },
+  {
+    id: 2, name: 'Marcus Johnson', email: 'marcus@example.com', role: 'Editor', status: 'Active',
+    linkedin: {
+      headline: 'Product Manager at FinServe',
+      location: 'New York, NY',
+      connections: 890,
+      experience: [
+        { title: 'Product Manager', company: 'FinServe', duration: '2021 - Present' },
+        { title: 'Associate PM', company: 'BigBank Inc', duration: '2018 - 2021' },
+      ],
+      skills: ['Product Strategy', 'Agile', 'SQL', 'User Research'],
+      profile_url: 'https://linkedin.com/in/marcus-johnson',
+    }
+  },
+  {
+    id: 3, name: 'Emily Rodriguez', email: 'emily@example.com', role: 'Viewer', status: 'Inactive',
+    linkedin: {
+      headline: 'UX Designer at DesignLab',
+      location: 'Austin, TX',
+      connections: 560,
+      experience: [
+        { title: 'UX Designer', company: 'DesignLab', duration: '2023 - Present' },
+        { title: 'UI Designer', company: 'AgencyOne', duration: '2020 - 2023' },
+      ],
+      skills: ['Figma', 'User Testing', 'Prototyping', 'Design Systems'],
+      profile_url: 'https://linkedin.com/in/emily-rodriguez',
+    }
+  },
+  {
+    id: 4, name: 'David Kim', email: 'david@example.com', role: 'Editor', status: 'Active',
+    linkedin: {
+      headline: 'Data Scientist at AnalyticsCo',
+      location: 'Seattle, WA',
+      connections: 720,
+      experience: [
+        { title: 'Data Scientist', company: 'AnalyticsCo', duration: '2020 - Present' },
+        { title: 'ML Engineer', company: 'DeepTech', duration: '2017 - 2020' },
+      ],
+      skills: ['Python', 'TensorFlow', 'SQL', 'Statistical Modeling'],
+      profile_url: 'https://linkedin.com/in/david-kim',
+    }
+  },
+  {
+    id: 5, name: 'Lisa Wang', email: 'lisa@example.com', role: 'Admin', status: 'Active',
+    linkedin: {
+      headline: 'CTO at CloudNative',
+      location: 'Denver, CO',
+      connections: 2100,
+      experience: [
+        { title: 'CTO', company: 'CloudNative', duration: '2021 - Present' },
+        { title: 'Director of Engineering', company: 'MegaCorp', duration: '2016 - 2021' },
+      ],
+      skills: ['AWS', 'Kubernetes', 'Architecture', 'Executive Leadership'],
+      profile_url: 'https://linkedin.com/in/lisa-wang',
+    }
+  },
 ];
 
 const MOCK_ACTIVITY = [
@@ -48,6 +113,7 @@ function App() {
         </nav>
         <div className="sidebar-footer">
           <span className="env-badge">LOCAL DEV</span>
+          <span className="version-badge">v1.1.0 — LinkedIn Integration</span>
         </div>
       </aside>
 
@@ -99,8 +165,20 @@ function OverviewPanel() {
 }
 
 function UsersPanel() {
+  const [selectedUser, setSelectedUser] = useState(null);
+
   return (
     <div className="panel">
+      {selectedUser && (
+        <ContactDetailModal
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
+      <div className="users-header">
+        <h3>Contact Directory</h3>
+        <span className="linkedin-badge">LinkedIn Enrichment Active</span>
+      </div>
       <table className="users-table">
         <thead>
           <tr>
@@ -108,19 +186,94 @@ function UsersPanel() {
             <th>Email</th>
             <th>Role</th>
             <th>Status</th>
+            <th>LinkedIn</th>
           </tr>
         </thead>
         <tbody>
           {MOCK_USERS.map((user) => (
             <tr key={user.id}>
-              <td>{user.name}</td>
+              <td>
+                <button
+                  className="name-link"
+                  onClick={() => setSelectedUser(user)}
+                >
+                  {user.name}
+                </button>
+              </td>
               <td>{user.email}</td>
               <td><span className="role-badge">{user.role}</span></td>
               <td><span className={`status-dot ${user.status.toLowerCase()}`}>{user.status}</span></td>
+              <td><span className="linkedin-connected">Connected</span></td>
             </tr>
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function ContactDetailModal({ user, onClose }) {
+  const { linkedin } = user;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}>x</button>
+
+        <div className="contact-header">
+          <div className="contact-avatar">{user.name.split(' ').map(n => n[0]).join('')}</div>
+          <div className="contact-title">
+            <h2>{user.name}</h2>
+            <p className="contact-headline">{linkedin.headline}</p>
+            <p className="contact-location">{linkedin.location}</p>
+          </div>
+        </div>
+
+        <div className="contact-meta">
+          <div className="meta-item">
+            <span className="meta-label">Email</span>
+            <span className="meta-value">{user.email}</span>
+          </div>
+          <div className="meta-item">
+            <span className="meta-label">Role</span>
+            <span className="meta-value">{user.role}</span>
+          </div>
+          <div className="meta-item">
+            <span className="meta-label">Connections</span>
+            <span className="meta-value">{linkedin.connections.toLocaleString()}</span>
+          </div>
+          <div className="meta-item">
+            <span className="meta-label">LinkedIn</span>
+            <a className="meta-value link" href={linkedin.profile_url} target="_blank" rel="noreferrer">
+              View Profile
+            </a>
+          </div>
+        </div>
+
+        <div className="contact-section">
+          <h4>Experience (from LinkedIn)</h4>
+          {linkedin.experience.map((exp, i) => (
+            <div key={i} className="experience-item">
+              <span className="exp-title">{exp.title}</span>
+              <span className="exp-company">{exp.company}</span>
+              <span className="exp-duration">{exp.duration}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="contact-section">
+          <h4>Skills</h4>
+          <div className="skills-list">
+            {linkedin.skills.map((skill, i) => (
+              <span key={i} className="skill-tag">{skill}</span>
+            ))}
+          </div>
+        </div>
+
+        <div className="contact-section source-note">
+          <p>Data sourced via LinkedIn API integration (PR #1)</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -147,11 +300,22 @@ function SettingsPanel() {
         </div>
         <div className="setting-row">
           <span>Build</span>
-          <span className="setting-value">Internal Local Dashboard Build</span>
+          <span className="setting-value">Internal Local Dashboard Build v1.1.0</span>
         </div>
         <div className="setting-row">
           <span>Version</span>
-          <span className="setting-value">1.0.0</span>
+          <span className="setting-value">1.1.0</span>
+        </div>
+      </div>
+      <div className="settings-group" style={{ marginTop: 16 }}>
+        <h3>Integrations</h3>
+        <div className="setting-row">
+          <span>LinkedIn API</span>
+          <span className="setting-value connected">Connected (stubbed)</span>
+        </div>
+        <div className="setting-row">
+          <span>Data Enrichment</span>
+          <span className="setting-value connected">Enabled</span>
         </div>
       </div>
     </div>
