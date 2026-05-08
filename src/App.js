@@ -279,17 +279,32 @@ function ContactDetailModal({ user, onClose }) {
 }
 
 function AnalyticsPanel() {
+  const apiBase = process.env.REACT_APP_API_BASE_URL;
   return (
     <div className="panel">
       <div className="placeholder-chart">
-        <p>Analytics charts would render here.</p>
-        <p className="muted">Connect a data source in Settings to populate.</p>
+        {apiBase ? (
+          <>
+            <p>Analytics endpoint: <code>{apiBase}/analytics</code></p>
+            <p className="muted">API configured. Charts would render from live data.</p>
+          </>
+        ) : (
+          <>
+            <p>Analytics charts would render here.</p>
+            <p className="muted">Set REACT_APP_API_BASE_URL in .env to connect a data source.</p>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
 function SettingsPanel() {
+  const apiBase = process.env.REACT_APP_API_BASE_URL || '(not configured)';
+  const linkedinKey = process.env.REACT_APP_LINKEDIN_API_KEY;
+  const keyConfigured = linkedinKey && linkedinKey !== 'your-linkedin-api-key-here';
+  const maskedKey = keyConfigured ? linkedinKey.slice(0, 4) + '••••' + linkedinKey.slice(-4) : null;
+
   return (
     <div className="panel">
       <div className="settings-group">
@@ -297,6 +312,10 @@ function SettingsPanel() {
         <div className="setting-row">
           <span>Mode</span>
           <span className="setting-value">Development (localhost:3000)</span>
+        </div>
+        <div className="setting-row">
+          <span>API Base URL</span>
+          <span className="setting-value">{apiBase}</span>
         </div>
         <div className="setting-row">
           <span>Build</span>
@@ -310,12 +329,22 @@ function SettingsPanel() {
       <div className="settings-group" style={{ marginTop: 16 }}>
         <h3>Integrations</h3>
         <div className="setting-row">
+          <span>LinkedIn API Key</span>
+          <span className={`setting-value ${keyConfigured ? 'connected' : ''}`}>
+            {keyConfigured ? maskedKey : 'Not configured — set REACT_APP_LINKEDIN_API_KEY in .env'}
+          </span>
+        </div>
+        <div className="setting-row">
           <span>LinkedIn API</span>
-          <span className="setting-value connected">Connected (stubbed)</span>
+          <span className={`setting-value ${keyConfigured ? 'connected' : ''}`}>
+            {keyConfigured ? 'Connected' : 'Disconnected (needs API key)'}
+          </span>
         </div>
         <div className="setting-row">
           <span>Data Enrichment</span>
-          <span className="setting-value connected">Enabled</span>
+          <span className={`setting-value ${keyConfigured ? 'connected' : ''}`}>
+            {keyConfigured ? 'Enabled' : 'Disabled (needs API key)'}
+          </span>
         </div>
       </div>
     </div>
